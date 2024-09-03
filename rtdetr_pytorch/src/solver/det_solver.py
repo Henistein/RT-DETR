@@ -66,6 +66,11 @@ class DetSolver(BaseSolver):
             print('best_stat: ', best_stat)
 
 
+            # write stats in tensorboard
+            self.writer.add_scalar("train_loss", train_stats["loss"], epoch)
+            self.writer.add_scalar("train_loss_bbox", train_stats["loss_bbox"], epoch)
+            self.writer.add_scalar("train_loss_vfl", train_stats["loss_vfl"], epoch)
+
             log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                         **{f'test_{k}': v for k, v in test_stats.items()},
                         'epoch': epoch,
@@ -99,10 +104,12 @@ class DetSolver(BaseSolver):
         module = self.ema.module if self.ema else self.model
         test_stats, coco_evaluator = evaluate(module, self.criterion, self.postprocessor,
                 self.val_dataloader, base_ds, self.device, self.output_dir)
+
+        # write stats in tensorboard
+        self.writer.add_scalar("test_loss", train_stats["loss"], epoch)
+        self.writer.add_scalar("test_loss_bbox", train_stats["loss_bbox"], epoch)
+        self.writer.add_scalar("test_loss_vfl", train_stats["loss_vfl"], epoch)
                 
-        print("AQUI")
-        print(test_stats)
-        exit()
         if self.output_dir:
             dist.save_on_master(coco_evaluator.coco_eval["bbox"].eval, self.output_dir / "eval.pth")
         
