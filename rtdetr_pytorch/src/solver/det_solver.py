@@ -6,6 +6,7 @@ import json
 import datetime
 
 import torch 
+from torch.utils.tensorboard import SummaryWriter
 
 from src.misc import dist
 from src.data import get_coco_api_from_dataset
@@ -21,6 +22,7 @@ class DetSolver(BaseSolver):
         self.train()
 
         args = self.cfg 
+        self.writer = SummaryWriter()
         
         n_parameters = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         print('number of params:', n_parameters)
@@ -98,6 +100,9 @@ class DetSolver(BaseSolver):
         test_stats, coco_evaluator = evaluate(module, self.criterion, self.postprocessor,
                 self.val_dataloader, base_ds, self.device, self.output_dir)
                 
+        print("AQUI")
+        print(test_stats)
+        exit()
         if self.output_dir:
             dist.save_on_master(coco_evaluator.coco_eval["bbox"].eval, self.output_dir / "eval.pth")
         
